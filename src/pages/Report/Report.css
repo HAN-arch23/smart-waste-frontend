@@ -1,0 +1,43 @@
+.report-page {
+  padding: 2.5rem 1.5rem;
+  max-width: 720px;
+}
+
+.report-card {
+  margin-top: 0;
+}
+
+.location-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.location-row input {
+  flex: 1;
+}
+
+.gps-btn {
+  white-space: nowrap;
+  padding: 0.65rem 1rem;
+}
+
+.gps-status {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.file-input {
+  width: 100%;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.report-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}

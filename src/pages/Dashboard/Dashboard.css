@@ -1,0 +1,188 @@
+.dashboard { padding: 2.5rem 1.5rem; }
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  padding: 0.6rem 1.4rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+/* Summary cards */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.summary-card:hover { border-color: var(--primary-light); }
+.summary-card.active { border-color: var(--primary); background: #e8f5e9; }
+
+.summary-count { display: block; font-size: 2rem; font-weight: 700; color: var(--primary-dark); }
+.summary-label { font-size: 0.85rem; color: var(--text-secondary); text-transform: capitalize; }
+
+/* Issue row with track button */
+.issue-with-timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.issue-with-timeline > :first-child { flex: 1; }
+
+.btn-timeline {
+  padding: 0.5rem 0.9rem;
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: white;
+  color: var(--primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  margin-top: 0.4rem;
+}
+
+.btn-timeline:hover { background: var(--primary); color: white; }
+
+/* Issues list */
+.issues-list { display: grid; gap: 1rem; }
+
+.loading-text { text-align: center; color: var(--text-secondary); padding: 2rem; }
+
+.empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); }
+.empty-state span { font-size: 3rem; display: block; margin-bottom: 1rem; }
+.empty-state p { margin-bottom: 1.5rem; }
+
+/* Analytics */
+.analytics-section { display: grid; gap: 1.5rem; }
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.analytic-card { text-align: center; padding: 1.5rem 1rem; }
+.analytic-num { display: block; font-size: 2.2rem; font-weight: 800; }
+.analytic-label { font-size: 0.85rem; color: var(--text-secondary); }
+
+.rate-card h3, .card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  margin-bottom: 1rem;
+}
+
+.rate-bar-bg {
+  height: 14px;
+  background: #e8f5e9;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.rate-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.rate-label { font-size: 0.88rem; color: var(--text-secondary); }
+
+/* Mini bar chart */
+.mini-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  height: 160px;
+  padding-top: 1.5rem;
+}
+
+.mini-bar-col { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; flex: 1; }
+.mini-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.4s ease; }
+.mini-bar-count { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); }
+.mini-bar-label { font-size: 0.72rem; color: var(--text-secondary); text-align: center; }
+
+.no-data { color: var(--text-muted); text-align: center; padding: 2rem; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-box {
+  width: 100%;
+  max-width: 540px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h3 { font-size: 1rem; color: var(--primary-dark); }
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0.2rem 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .analytics-grid { grid-template-columns: repeat(2, 1fr); }
+}

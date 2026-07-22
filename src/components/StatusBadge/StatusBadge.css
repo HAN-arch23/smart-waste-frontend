@@ -1,0 +1,14 @@
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.status-warning  { background: #fff3e0; color: #e65100; }
+.status-info     { background: #e3f2fd; color: #01579b; }
+.status-success  { background: #e8f5e9; color: #2e7d32; }
+.status-danger   { background: #ffebee; color: #b71c1c; }
+.status-default  { background: #f5f5f5; color: #555;    }
