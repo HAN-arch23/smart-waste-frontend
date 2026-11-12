@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import StatusBadge from '../../components/StatusBadge/StatusBadge'
+import AdminCharts from '../../components/AdminCharts/AdminCharts'
 import './Admin.css'
 import API_BASE from '../../utils/api.js'
 
-const statusOptions = ['pending', 'in-progress', 'resolved', 'rejected']
+const statusOptions = ['pending', 'assigned', 'collected', 'recycled', 'resolved', 'rejected']
+const IN_PROGRESS = ['assigned', 'collected', 'recycled']
 
 const Admin = () => {
   const [issues, setIssues] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [updating, setUpdating] = useState(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     fetchIssues()
@@ -18,7 +21,7 @@ const Admin = () => {
   const fetchIssues = async () => {
     try {
       const token = localStorage.getItem('swms_token')
-      const res = await fetch(`${API_BASE}/api/issues`, {
+      const res = await fetch(`${API_BASE}/api/issues?limit=100`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
@@ -34,7 +37,7 @@ const Admin = () => {
     setUpdating(id)
     try {
       const token = localStorage.getItem('swms_token')
-      await fetch(`${API_BASE}/api/issues/${id}/status`, {
+      const res = await fetch(`${API_BASE}/api/issues/${id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -42,23 +45,30 @@ const Admin = () => {
         },
         body: JSON.stringify({ status }),
       })
-      setIssues(prev =>
-        prev.map(i => i._id === id ? { ...i, status } : i)
-      )
+      if (!res.ok) throw new Error('Update rejected by server')
+      setIssues(prev => prev.map(i => (i._id === id ? { ...i, status } : i)))
+      setRefreshKey(k => k + 1)
     } catch (err) {
       console.error('Update failed:', err)
+      alert('Status update failed. Please try again.')
     } finally {
       setUpdating(null)
     }
   }
 
-  const filtered = filter === 'all' ? issues : issues.filter(i => i.status === filter)
+  const matchesFilter = (i) => {
+    if (filter === 'all') return true
+    if (filter === 'in-progress') return IN_PROGRESS.includes(i.status)
+    return i.status === filter
+  }
+  const filtered = issues.filter(matchesFilter)
 
   const counts = {
     all: issues.length,
     pending: issues.filter(i => i.status === 'pending').length,
-    'in-progress': issues.filter(i => i.status === 'in-progress').length,
+    'in-progress': issues.filter(i => IN_PROGRESS.includes(i.status)).length,
     resolved: issues.filter(i => i.status === 'resolved').length,
+    rejected: issues.filter(i => i.status === 'rejected').length,
   }
 
   return (
@@ -79,6 +89,9 @@ const Admin = () => {
           </div>
         ))}
       </div>
+
+      {/* Charts */}
+      <AdminCharts refreshKey={refreshKey} />
 
       {/* Issues Table */}
       <div className="admin-table-wrapper card">
