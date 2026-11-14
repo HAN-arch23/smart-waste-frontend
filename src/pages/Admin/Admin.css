@@ -104,3 +104,16 @@
 @media (max-width: 768px) {
   .admin-stats { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Search, filters, delete, pagination */
+.admin-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0 6px; }
+.admin-search { flex: 1 1 260px; padding: 10px 12px; border: 1px solid #c9d6cb; border-radius: 8px; font: inherit; }
+.admin-cat { padding: 10px 12px; border: 1px solid #c9d6cb; border-radius: 8px; font: inherit; background: #fff; }
+.admin-clear { padding: 10px 14px; border: 1px solid #c9d6cb; border-radius: 8px; background: #fff; cursor: pointer; font: inherit; }
+.admin-count { color: #666; font-size: 0.9rem; margin: 6px 0 10px; }
+.btn-del { padding: 6px 12px; border: 1px solid #b71c1c; color: #b71c1c; background: #fff; border-radius: 6px; cursor: pointer; font: inherit; font-size: 0.85rem; }
+.btn-del:hover:not(:disabled) { background: #b71c1c; color: #fff; }
+.btn-del:disabled { opacity: 0.5; cursor: not-allowed; }
+.admin-pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 16px 0; }
+.admin-pager button { padding: 8px 16px; border: 1px solid #2e7d32; color: #2e7d32; background: #fff; border-radius: 8px; cursor: pointer; font: inherit; }
+.admin-pager button:disabled { opacity: 0.4; cursor: not-allowed; }

@@ -5,12 +5,17 @@ import './Admin.css'
 import API_BASE from '../../utils/api.js'
 
 const statusOptions = ['pending', 'assigned', 'collected', 'recycled', 'resolved', 'rejected']
+const categories = ['Overflowing Bin', 'Illegal Dumping', 'Missed Collection', 'Hazardous Waste', 'Blocked Drain', 'Other']
 const IN_PROGRESS = ['assigned', 'collected', 'recycled']
+const PAGE_SIZE = 10
 
 const Admin = () => {
   const [issues, setIssues] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [category, setCategory] = useState('')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [updating, setUpdating] = useState(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
@@ -18,12 +23,17 @@ const Admin = () => {
     fetchIssues()
   }, [])
 
+  useEffect(() => {
+    setPage(1)
+  }, [filter, category, search])
+
+  const authHeaders = () => ({
+    Authorization: `Bearer ${localStorage.getItem('swms_token')}`,
+  })
+
   const fetchIssues = async () => {
     try {
-      const token = localStorage.getItem('swms_token')
-      const res = await fetch(`${API_BASE}/api/issues?limit=100`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch(`${API_BASE}/api/issues?limit=500`, { headers: authHeaders() })
       const data = await res.json()
       setIssues(data.issues || [])
     } catch (err) {
@@ -34,16 +44,14 @@ const Admin = () => {
   }
 
   const updateStatus = async (id, status) => {
+    const note = window.prompt(`Add a note for changing this issue to "${status}" (optional):`, '')
+    if (note === null) return // admin cancelled
     setUpdating(id)
     try {
-      const token = localStorage.getItem('swms_token')
       const res = await fetch(`${API_BASE}/api/issues/${id}/status`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ status, note: note.trim() || undefined }),
       })
       if (!res.ok) throw new Error('Update rejected by server')
       setIssues(prev => prev.map(i => (i._id === id ? { ...i, status } : i)))
@@ -56,12 +64,39 @@ const Admin = () => {
     }
   }
 
-  const matchesFilter = (i) => {
-    if (filter === 'all') return true
-    if (filter === 'in-progress') return IN_PROGRESS.includes(i.status)
-    return i.status === filter
+  const deleteIssue = async (id, title) => {
+    if (!window.confirm(`Permanently delete "${title}"? This cannot be undone.`)) return
+    setUpdating(id)
+    try {
+      const res = await fetch(`${API_BASE}/api/issues/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error('Delete rejected by server')
+      setIssues(prev => prev.filter(i => i._id !== id))
+      setRefreshKey(k => k + 1)
+    } catch (err) {
+      console.error('Delete failed:', err)
+      alert('Delete failed. Please try again.')
+    } finally {
+      setUpdating(null)
+    }
   }
-  const filtered = issues.filter(matchesFilter)
+
+  const q = search.trim().toLowerCase()
+  const matches = (i) => {
+    if (filter === 'in-progress' && !IN_PROGRESS.includes(i.status)) return false
+    if (filter !== 'all' && filter !== 'in-progress' && i.status !== filter) return false
+    if (category && i.category !== category) return false
+    if (!q) return true
+    return [i.title, i.location, i.description, i.category, i.reportedBy?.name]
+      .some(v => (v || '').toLowerCase().includes(q))
+  }
+  const filtered = issues.filter(matches)
+
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const current = Math.min(page, pages)
+  const pageItems = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE)
 
   const counts = {
     all: issues.length,
@@ -70,6 +105,13 @@ const Admin = () => {
     resolved: issues.filter(i => i.status === 'resolved').length,
     rejected: issues.filter(i => i.status === 'rejected').length,
   }
+
+  const clearFilters = () => {
+    setFilter('all')
+    setCategory('')
+    setSearch('')
+  }
+  const hasFilters = filter !== 'all' || category || search
 
   return (
     <div className="admin container">
@@ -93,6 +135,29 @@ const Admin = () => {
       {/* Charts */}
       <AdminCharts refreshKey={refreshKey} />
 
+      {/* Search and filters */}
+      <div className="admin-toolbar">
+        <input
+          type="search"
+          className="admin-search"
+          placeholder="Search by title, location, reporter..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select className="admin-cat" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="">All categories</option>
+          {categories.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        {hasFilters && (
+          <button className="admin-clear" onClick={clearFilters}>Clear filters</button>
+        )}
+      </div>
+      {!loading && (
+        <p className="admin-count">
+          Showing {pageItems.length} of {filtered.length} issue{filtered.length === 1 ? '' : 's'}
+        </p>
+      )}
+
       {/* Issues Table */}
       <div className="admin-table-wrapper card">
         {loading ? (
@@ -109,10 +174,11 @@ const Admin = () => {
                 <th>Reported By</th>
                 <th>Status</th>
                 <th>Update</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map(issue => (
+              {pageItems.map(issue => (
                 <tr key={issue._id}>
                   <td className="issue-title-cell">{issue.title}</td>
                   <td>{issue.category}</td>
@@ -131,12 +197,30 @@ const Admin = () => {
                       ))}
                     </select>
                   </td>
+                  <td>
+                    <button
+                      className="btn-del"
+                      disabled={updating === issue._id}
+                      onClick={() => deleteIssue(issue._id, issue.title)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {/* Pagination */}
+      {!loading && pages > 1 && (
+        <div className="admin-pager">
+          <button disabled={current === 1} onClick={() => setPage(current - 1)}>Previous</button>
+          <span>Page {current} of {pages}</span>
+          <button disabled={current === pages} onClick={() => setPage(current + 1)}>Next</button>
+        </div>
+      )}
     </div>
   )
 }
